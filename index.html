@@ -37,38 +37,6 @@
     <p id="estado"></p><h2>Hábitos</h2><pre id="datos-habitos"></pre>
     <h2>Registros</h2><pre id="datos-registros"></pre><button id="borrar" type="button">Borrar cookies</button>
   </main>
-  <script src="cookies.js"></script>
-  <script>
-    const $=id=>document.getElementById(id), formulario=$("formulario-habito"), campoNombre=$("nombre");
-    const formularioRegistro=$("formulario-registro"), selectorHabito=$("habito-registro");
-    const almacenado=leerCookie("habitos"), historial=leerCookie("registros");
-    let habitos=Array.isArray(almacenado)?almacenado:[], registros=Array.isArray(historial)?historial:[];
-    function actualizarHabitos(){selectorHabito.replaceChildren(new Option("Elige un hábito",""));habitos.forEach(h=>selectorHabito.add(new Option(h.nombre,h.id)));}
-    function mostrarDatos(){
-      $("datos-habitos").textContent=JSON.stringify(habitos,null,2);$("datos-registros").textContent=JSON.stringify(registros,null,2);
-      $("estado").textContent=habitos.length||registros.length?"Datos recuperados.":"Sin datos guardados.";actualizarHabitos();
-    }
-    window.obtenerDatosSeguimiento=()=>({habitos,registros});
-    window.toggleCumplido=id=>{
-      const registro=registros.find(item=>item.id===id);
-      if(!registro)return false;
-      registro.cumplido=!registro.cumplido;guardarTodo(habitos,registros);mostrarDatos();return true;
-    };
-    campoNombre.addEventListener("input",()=>{campoNombre.setCustomValidity("");$("error-nombre").textContent="";});
-    formulario.addEventListener("submit",e=>{
-      e.preventDefault();const nombre=campoNombre.value.trim();
-      if(!nombre){campoNombre.setCustomValidity("El nombre no puede estar vacío.");$("error-nombre").textContent="El nombre no puede estar vacío.";campoNombre.reportValidity();return;}
-      habitos.push({id:crypto.randomUUID(),nombre,descripcion:$("descripcion").value.trim(),categoria:$("categoria").value});
-      guardarTodo(habitos,registros);formulario.reset();$("error-nombre").textContent="";mostrarDatos();
-    });
-    formularioRegistro.addEventListener("submit",e=>{
-      e.preventDefault();const fecha=$("fecha-registro").value;
-      if(!selectorHabito.value||!fecha){$("error-registro").textContent="Selecciona un hábito y una fecha.";return;}
-      registros.push({id:crypto.randomUUID(),habitoId:selectorHabito.value,fecha,observaciones:$("observaciones").value.trim(),cumplido:$("cumplido").checked});
-      guardarTodo(habitos,registros);formularioRegistro.reset();$("error-registro").textContent="";mostrarDatos();
-    });
-    $("borrar").addEventListener("click",()=>{borrarCookie("habitos");borrarCookie("registros");habitos=[];registros=[];mostrarDatos();});
-    mostrarDatos();
-  </script>
+  <script src="app.js"></script>
 </body>
 </html>

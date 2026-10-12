@@ -25,36 +25,6 @@
       <tbody id="filas"></tbody>
     </table>
   </main>
-  <script>
-    const filas=document.getElementById("filas");
-    function actualizarTabla(){
-      if(!window.opener||window.opener.closed||typeof window.opener.obtenerDatosSeguimiento!=="function"){
-        document.getElementById("aviso").textContent="Abre el seguimiento desde la página principal para editar registros.";
-        return;
-      }
-      const {habitos,registros}=window.opener.obtenerDatosSeguimiento();
-      filas.replaceChildren();let cumplidos=0;
-      registros.forEach(registro=>{
-        const fila=filas.insertRow(),habito=habitos.find(item=>item.id===registro.habitoId);
-        [habito?habito.nombre:"Hábito no disponible",registro.fecha,registro.observaciones||"—"].forEach(valor=>fila.insertCell().textContent=valor);
-        const estado=fila.insertCell();estado.textContent=registro.cumplido?"✓":"✗";
-        estado.className=registro.cumplido?"cumplido":"fallado";
-        const accion=fila.insertCell(),boton=document.createElement("button");
-        boton.type="button";boton.textContent="Cambiar";
-        boton.addEventListener("click",()=>{
-          if(!window.opener||window.opener.closed||typeof window.opener.toggleCumplido!=="function"||!window.opener.toggleCumplido(registro.id)){
-            document.getElementById("aviso").textContent="No se pudo actualizar el registro en la página principal.";
-            return;
-          }
-          document.getElementById("aviso").textContent="";
-          actualizarTabla();
-        });
-        accion.append(boton);if(registro.cumplido)cumplidos++;
-      });
-      document.getElementById("resumen").textContent=`Cumplidos: ${cumplidos} · Fallados: ${registros.length-cumplidos}`;
-      if(!registros.length)document.getElementById("aviso").textContent="Todavía no hay registros.";
-    }
-    actualizarTabla();
-  </script>
+  <script src="app.js"></script>
 </body>
 </html>
