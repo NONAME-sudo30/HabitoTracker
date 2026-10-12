@@ -1,50 +1,74 @@
 <!doctype html>
 <html lang="es">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Cookies de hábitos y registros</title>
-  </head>
-  <body>
-    <main>
-      <h1>Hábitos y registros guardados en cookies</h1>
-      <p id="estado">Cargando datos guardados...</p>
-      <pre id="datos"></pre>
-      <button id="guardar" type="button">Guardar datos de prueba</button>
-      <button id="borrar" type="button">Borrar cookies</button>
-    </main>
-    <script src="cookies.js"></script>
-    <script>
-      const estado = document.getElementById("estado");
-      const datos = document.getElementById("datos");
-
-      function mostrarDatos() {
-        const habitos = leerCookie("habitos");
-        const registros = leerCookie("registros");
-
-        datos.textContent = JSON.stringify({ habitos, registros }, null, 2);
-        estado.textContent = habitos || registros
-          ? "Datos recuperados de las cookies."
-          : "No hay datos guardados todavía.";
-        console.log("Hábitos recuperados:", habitos);
-        console.log("Registros recuperados:", registros);
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Mis hábitos</title>
+  <style>
+    body{max-width:600px;margin:40px auto;padding:0 16px;background:#17151b;color:#f5f2f5;font:16px Arial,sans-serif}
+    main{padding:24px;background:#24212a;border:1px solid #45404b;border-radius:12px}
+    h1,h2{color:#eee9f1} form{display:grid;gap:10px}
+    input,textarea,select,button{box-sizing:border-box;padding:10px;border:1px solid #625965;border-radius:6px;font:inherit}
+    input,textarea,select{width:100%;background:#17151b;color:#f5f2f5}
+    button{width:fit-content;background:#c83d52;color:white;cursor:pointer}
+    pre{overflow:auto;padding:12px;background:#17151b;color:#eee9f1}
+    #error-nombre{color:#ff9daa}
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Mis hábitos</h1>
+    <form id="formulario-habito">
+      <label for="nombre">Nombre</label>
+      <input id="nombre" name="nombre" maxlength="100" required>
+      <label for="descripcion">Descripción</label>
+      <textarea id="descripcion" name="descripcion" rows="3"></textarea>
+      <label for="categoria">Categoría</label>
+      <select id="categoria" name="categoria" required>
+        <option value="">Elige una categoría</option>
+        <option>Salud</option><option>Estudio</option><option>Ocio</option>
+      </select>
+      <button type="submit">Crear</button>
+      <p id="error-nombre" role="alert"></p>
+    </form>
+    <p id="estado"></p>
+    <h2>Hábitos</h2><pre id="datos-habitos"></pre>
+    <h2>Registros</h2><pre id="datos-registros"></pre>
+    <button id="borrar" type="button">Borrar cookies</button>
+  </main>
+  <script src="cookies.js"></script>
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const formulario = $("formulario-habito"), campoNombre = $("nombre");
+    const almacenado = leerCookie("habitos"), historial = leerCookie("registros");
+    let habitos = Array.isArray(almacenado) ? almacenado : [];
+    let registros = Array.isArray(historial) ? historial : [];
+    function mostrarDatos() {
+      $("datos-habitos").textContent = JSON.stringify(habitos, null, 2);
+      $("datos-registros").textContent = JSON.stringify(registros, null, 2);
+      $("estado").textContent = habitos.length || registros.length ? "Datos recuperados." : "Sin datos guardados.";
+    }
+    campoNombre.addEventListener("input", () => { campoNombre.setCustomValidity(""); $("error-nombre").textContent = ""; });
+    formulario.addEventListener("submit", (evento) => {
+      evento.preventDefault();
+      const nombre = campoNombre.value.trim();
+      if (!nombre) {
+        campoNombre.setCustomValidity("El nombre no puede estar vacío.");
+        $("error-nombre").textContent = "El nombre no puede estar vacío.";
+        campoNombre.reportValidity();
+        return;
       }
-
-      document.getElementById("guardar").addEventListener("click", () => {
-        guardarTodo(
-          [{ nombre: "Leer", activo: true }],
-          [{ habito: "Leer", fecha: "2026-10-12" }],
-        );
-        location.reload();
-      });
-
-      document.getElementById("borrar").addEventListener("click", () => {
-        borrarCookie("habitos");
-        borrarCookie("registros");
-        mostrarDatos();
-      });
-
+      habitos.push({ id: crypto.randomUUID(), nombre, descripcion: $("descripcion").value.trim(), categoria: $("categoria").value });
+      guardarTodo(habitos, registros);
+      formulario.reset();
+      $("error-nombre").textContent = "";
       mostrarDatos();
-    </script>
-  </body>
+    });
+    $("borrar").addEventListener("click", () => {
+      borrarCookie("habitos"); borrarCookie("registros");
+      habitos = []; registros = []; mostrarDatos();
+    });
+    mostrarDatos();
+  </script>
+</body>
 </html>
