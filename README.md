@@ -3,7 +3,11 @@
 - `leerCookie` decodifica con `decodeURIComponent` y recupera el objeto con `JSON.parse`; `try/catch` evita fallos si la cookie está corrupta.
 - Un hábito tiene `{ id, nombre, descripcion, categoria }`; su formulario valida nombre no vacío y categoría.
 - `guardarTodo(habitos, registros)` guarda cada array en su cookie; `borrarCookie(nombre)` elimina la cookie indicada.
+- Al iniciar, los arrays se recuperan de las cookies; cada alta, cambio de estado o borrado actualiza la persistencia. `mostrarDatos()` refresca las vistas y `actualizarEstadisticas()` calcula el total de hábitos y los registros cumplidos/fallados con `filter`.
+- **Borrar todo** pide confirmación antes de eliminar las cookies de hábitos y registros y limpiar los arrays en memoria.
 - El desplegable de registros se genera recorriendo `habitos` y creando una opción por hábito; se actualiza al crear uno.
 - Cada registro guarda el `habitoId` seleccionado, que coincide con el `id` del hábito para relacionarlos, además de fecha, observaciones y si se cumplió.
-- El seguimiento se abre en `seguimiento.html`; `window.opener` permite a esa ventana hija consultar los datos y llamar `toggleCumplido(id)` en la página principal. La función cambia el registro del array original y guarda las cookies; la hija vuelve a leer los datos y repinta la tabla.
+- El seguimiento se abre en `seguimiento.html` como una ventana secundaria. En esa ventana, `window.opener` es la referencia a la ventana principal que la abrió. La página principal publica `obtenerDatosSeguimiento()` y `toggleCumplido(id)` en `window`, de modo que la hija puede consultar los arrays y pedirle al padre que cambie un registro.
+- El botón **Cambiar** de cada fila llama `window.opener.toggleCumplido(id)`. El padre busca el registro por su identificador y modifica `cumplido` directamente en el array `registros` que mantiene en memoria; después guarda los arrays actualizados en las cookies. La ventana secundaria vuelve a consultar los datos del padre y repinta la tabla para mostrar el nuevo estado inmediatamente.
 - Todo el JavaScript está en `app.js`: incluye las funciones de cookies y detecta si se ejecuta en la página principal o en seguimiento. Ambos HTML cargan ese mismo archivo.
+- Problema encontrado: al abrir `seguimiento.html` directamente, `window.opener` es `null` y la ventana no puede leer ni cambiar los datos del padre. Se resolvió abriendo el seguimiento desde el enlace de la página principal y mostrando un aviso cuando falta el opener; así queda claro cómo acceder correctamente al flujo.

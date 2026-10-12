@@ -42,10 +42,18 @@
       habitos.forEach((habito) => selectorHabito.add(new Option(habito.nombre, habito.id)));
     }
 
+    // Mantiene el resumen sincronizado con los arrays en memoria tras cada cambio.
+    function actualizarEstadisticas() {
+      $("total-habitos").textContent = habitos.length;
+      $("dias-cumplidos").textContent = registros.filter((registro) => registro.cumplido).length;
+      $("dias-fallados").textContent = registros.filter((registro) => !registro.cumplido).length;
+    }
+
     function mostrarDatos() {
       $("datos-habitos").textContent = JSON.stringify(habitos, null, 2);
       $("datos-registros").textContent = JSON.stringify(registros, null, 2);
       $("estado").textContent = habitos.length || registros.length ? "Datos recuperados." : "Sin datos guardados.";
+      actualizarEstadisticas();
       actualizarHabitos();
     }
 
@@ -106,6 +114,7 @@
     });
 
     $("borrar").addEventListener("click", () => {
+      if (!window.confirm("¿Seguro que quieres borrar todos los hábitos y registros?")) return;
       borrarCookie("habitos");
       borrarCookie("registros");
       habitos = [];

@@ -12,12 +12,19 @@
     input,textarea,select{width:100%;background:#17151b;color:#f5f2f5}input[type=checkbox]{width:auto}
     button{width:fit-content;background:#c83d52;color:white;cursor:pointer}nav{margin-bottom:14px}nav a{margin-right:14px;color:#f5f2f5}
     pre{overflow:auto;padding:12px;background:#17151b;color:#eee9f1}#error-nombre,#error-registro{color:#ff9daa}
+    #estadisticas{padding:12px;background:#17151b;border-radius:6px}
   </style>
 </head>
 <body>
   <nav id="menu"><a href="#inicio">Inicio</a><a href="seguimiento.html" target="seguimiento">Ver seguimiento</a></nav>
   <main id="inicio">
     <h1>Mis hábitos</h1>
+    <section id="estadisticas" aria-labelledby="titulo-estadisticas">
+      <h2 id="titulo-estadisticas">Estadísticas</h2>
+      <p>Total de hábitos: <strong id="total-habitos">0</strong></p>
+      <p>Días cumplidos: <strong id="dias-cumplidos">0</strong></p>
+      <p>Días fallados: <strong id="dias-fallados">0</strong></p>
+    </section>
     <form id="formulario-habito">
       <label for="nombre">Nombre</label><input id="nombre" name="nombre" maxlength="100" required>
       <label for="descripcion">Descripción</label><textarea id="descripcion" rows="3"></textarea>
@@ -35,7 +42,7 @@
       <button type="submit">Guardar registro</button><p id="error-registro" role="alert"></p>
     </form>
     <p id="estado"></p><h2>Hábitos</h2><pre id="datos-habitos"></pre>
-    <h2>Registros</h2><pre id="datos-registros"></pre><button id="borrar" type="button">Borrar cookies</button>
+    <h2>Registros</h2><pre id="datos-registros"></pre><button id="borrar" type="button">Borrar todo</button>
   </main>
   <script src="app.js"></script>
 </body>
