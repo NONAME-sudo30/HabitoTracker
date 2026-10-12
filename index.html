@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Cookies de hábitos y registros</title>
+  </head>
+  <body>
+    <main>
+      <h1>Hábitos y registros guardados en cookies</h1>
+      <p id="estado">Cargando datos guardados...</p>
+      <pre id="datos"></pre>
+      <button id="guardar" type="button">Guardar datos de prueba</button>
+      <button id="borrar" type="button">Borrar cookies</button>
+    </main>
+    <script src="cookies.js"></script>
+    <script>
+      const estado = document.getElementById("estado");
+      const datos = document.getElementById("datos");
+
+      function mostrarDatos() {
+        const habitos = leerCookie("habitos");
+        const registros = leerCookie("registros");
+
+        datos.textContent = JSON.stringify({ habitos, registros }, null, 2);
+        estado.textContent = habitos || registros
+          ? "Datos recuperados de las cookies."
+          : "No hay datos guardados todavía.";
+        console.log("Hábitos recuperados:", habitos);
+        console.log("Registros recuperados:", registros);
+      }
+
+      document.getElementById("guardar").addEventListener("click", () => {
+        guardarTodo(
+          [{ nombre: "Leer", activo: true }],
+          [{ habito: "Leer", fecha: "2026-10-12" }],
+        );
+        location.reload();
+      });
+
+      document.getElementById("borrar").addEventListener("click", () => {
+        borrarCookie("habitos");
+        borrarCookie("registros");
+        mostrarDatos();
+      });
+
+      mostrarDatos();
+    </script>
+  </body>
+</html>
