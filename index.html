@@ -10,6 +10,7 @@
     h1,h2{color:#eee9f1} form{display:grid;gap:10px}
     input,textarea,select,button{box-sizing:border-box;padding:10px;border:1px solid #625965;border-radius:6px;font:inherit}
     input,textarea,select{width:100%;background:#17151b;color:#f5f2f5}
+    input[type=checkbox]{width:auto}
     button{width:fit-content;background:#c83d52;color:white;cursor:pointer}
     pre{overflow:auto;padding:12px;background:#17151b;color:#eee9f1}
     #error-nombre{color:#ff9daa}
@@ -31,6 +32,18 @@
       <button type="submit">Crear</button>
       <p id="error-nombre" role="alert"></p>
     </form>
+    <h2>Apuntar un día</h2>
+    <form id="formulario-registro">
+      <label for="habito-registro">Hábito</label>
+      <select id="habito-registro" required></select>
+      <label for="fecha-registro">Fecha</label>
+      <input id="fecha-registro" type="date" required>
+      <label for="observaciones">Observaciones</label>
+      <textarea id="observaciones" rows="3"></textarea>
+      <label><input id="cumplido" type="checkbox"> Cumplido</label>
+      <button type="submit">Guardar registro</button>
+      <p id="error-registro" role="alert"></p>
+    </form>
     <p id="estado"></p>
     <h2>Hábitos</h2><pre id="datos-habitos"></pre>
     <h2>Registros</h2><pre id="datos-registros"></pre>
@@ -40,13 +53,19 @@
   <script>
     const $ = (id) => document.getElementById(id);
     const formulario = $("formulario-habito"), campoNombre = $("nombre");
+    const formularioRegistro = $("formulario-registro"), selectorHabito = $("habito-registro");
     const almacenado = leerCookie("habitos"), historial = leerCookie("registros");
     let habitos = Array.isArray(almacenado) ? almacenado : [];
     let registros = Array.isArray(historial) ? historial : [];
+    function actualizarHabitos() {
+      selectorHabito.replaceChildren(new Option("Elige un hábito", ""));
+      habitos.forEach((habito) => selectorHabito.add(new Option(habito.nombre, habito.id)));
+    }
     function mostrarDatos() {
       $("datos-habitos").textContent = JSON.stringify(habitos, null, 2);
       $("datos-registros").textContent = JSON.stringify(registros, null, 2);
       $("estado").textContent = habitos.length || registros.length ? "Datos recuperados." : "Sin datos guardados.";
+      actualizarHabitos();
     }
     campoNombre.addEventListener("input", () => { campoNombre.setCustomValidity(""); $("error-nombre").textContent = ""; });
     formulario.addEventListener("submit", (evento) => {
@@ -62,6 +81,22 @@
       guardarTodo(habitos, registros);
       formulario.reset();
       $("error-nombre").textContent = "";
+      mostrarDatos();
+    });
+    formularioRegistro.addEventListener("submit", (evento) => {
+      evento.preventDefault();
+      const fecha = $("fecha-registro").value;
+      if (!selectorHabito.value || !fecha) {
+        $("error-registro").textContent = "Selecciona un hábito y una fecha.";
+        return;
+      }
+      registros.push({
+        id: crypto.randomUUID(), habitoId: selectorHabito.value, fecha,
+        observaciones: $("observaciones").value.trim(), cumplido: $("cumplido").checked,
+      });
+      guardarTodo(habitos, registros);
+      formularioRegistro.reset();
+      $("error-registro").textContent = "";
       mostrarDatos();
     });
     $("borrar").addEventListener("click", () => {
