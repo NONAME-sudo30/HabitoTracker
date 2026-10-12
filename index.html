@@ -6,21 +6,16 @@
   <title>Mis hábitos</title>
   <style>
     body{max-width:600px;margin:32px auto;padding:0 16px;background:#17151b;color:#f5f2f5;font:16px Arial,sans-serif}
-    main,.caja-modal{padding:20px;background:#24212a;border:1px solid #45404b;border-radius:10px}
+    main{padding:20px;background:#24212a;border:1px solid #45404b;border-radius:10px}
     h1,h2{color:#eee9f1}form{display:grid;gap:10px}
     input,textarea,select,button{box-sizing:border-box;padding:10px;border:1px solid #625965;border-radius:6px;font:inherit}
     input,textarea,select{width:100%;background:#17151b;color:#f5f2f5}input[type=checkbox]{width:auto}
     button{width:fit-content;background:#c83d52;color:white;cursor:pointer}nav{margin-bottom:14px}nav a{margin-right:14px;color:#f5f2f5}
     pre{overflow:auto;padding:12px;background:#17151b;color:#eee9f1}#error-nombre,#error-registro{color:#ff9daa}
-    .modal{position:fixed;inset:0;z-index:2;display:grid;place-items:center;padding:16px;background:rgba(0,0,0,.6)}
-    .modal.oculto{display:none}.caja-modal{width:min(100%,700px);max-height:85vh;overflow:auto}
-    .cabecera-modal{display:flex;align-items:center;justify-content:space-between}.cabecera-modal h2{margin:0}
-    table{width:100%;margin-top:16px;border-collapse:collapse;text-align:left}th,td{padding:8px;border-bottom:1px solid #45404b}
-    .cumplido{color:#75d69c}.fallado{color:#ff8999}
   </style>
 </head>
 <body>
-  <nav id="menu"><a href="#inicio">Inicio</a><a id="ver-seguimiento" href="#seguimiento">Ver seguimiento</a></nav>
+  <nav id="menu"><a href="#inicio">Inicio</a><a href="seguimiento.html" target="seguimiento">Ver seguimiento</a></nav>
   <main id="inicio">
     <h1>Mis hábitos</h1>
     <form id="formulario-habito">
@@ -42,17 +37,10 @@
     <p id="estado"></p><h2>Hábitos</h2><pre id="datos-habitos"></pre>
     <h2>Registros</h2><pre id="datos-registros"></pre><button id="borrar" type="button">Borrar cookies</button>
   </main>
-  <div class="modal oculto" id="modal-seguimiento">
-    <section class="caja-modal" role="dialog" aria-modal="true" aria-labelledby="titulo-seguimiento">
-      <header class="cabecera-modal"><h2 id="titulo-seguimiento">Seguimiento</h2><button id="cerrar-modal" type="button" aria-label="Cerrar">✕</button></header>
-      <p id="resumen-seguimiento"></p>
-      <table><thead><tr><th>Hábito</th><th>Fecha</th><th>Observaciones</th><th>Estado</th></tr></thead><tbody id="filas-seguimiento"></tbody></table>
-    </section>
-  </div>
   <script src="cookies.js"></script>
   <script>
     const $=id=>document.getElementById(id), formulario=$("formulario-habito"), campoNombre=$("nombre");
-    const formularioRegistro=$("formulario-registro"), selectorHabito=$("habito-registro"), modal=$("modal-seguimiento");
+    const formularioRegistro=$("formulario-registro"), selectorHabito=$("habito-registro");
     const almacenado=leerCookie("habitos"), historial=leerCookie("registros");
     let habitos=Array.isArray(almacenado)?almacenado:[], registros=Array.isArray(historial)?historial:[];
     function actualizarHabitos(){selectorHabito.replaceChildren(new Option("Elige un hábito",""));habitos.forEach(h=>selectorHabito.add(new Option(h.nombre,h.id)));}
@@ -60,16 +48,12 @@
       $("datos-habitos").textContent=JSON.stringify(habitos,null,2);$("datos-registros").textContent=JSON.stringify(registros,null,2);
       $("estado").textContent=habitos.length||registros.length?"Datos recuperados.":"Sin datos guardados.";actualizarHabitos();
     }
-    function generarSeguimiento(){
-      const filas=$("filas-seguimiento");filas.replaceChildren();let cumplidos=0;
-      registros.forEach(r=>{
-        const fila=filas.insertRow(), habito=habitos.find(h=>h.id===r.habitoId);
-        [habito?habito.nombre:"Hábito no disponible",r.fecha,r.observaciones||"—"].forEach(t=>fila.insertCell().textContent=t);
-        const estado=fila.insertCell();estado.textContent=r.cumplido?"✓":"✗";estado.className=r.cumplido?"cumplido":"fallado";
-        estado.setAttribute("aria-label",r.cumplido?"Cumplido":"Fallado");if(r.cumplido)cumplidos++;
-      });
-      $("resumen-seguimiento").textContent=`Cumplidos: ${cumplidos} · Fallados: ${registros.length-cumplidos}`;
-    }
+    window.obtenerDatosSeguimiento=()=>({habitos,registros});
+    window.toggleCumplido=id=>{
+      const registro=registros.find(item=>item.id===id);
+      if(!registro)return false;
+      registro.cumplido=!registro.cumplido;guardarTodo(habitos,registros);mostrarDatos();return true;
+    };
     campoNombre.addEventListener("input",()=>{campoNombre.setCustomValidity("");$("error-nombre").textContent="";});
     formulario.addEventListener("submit",e=>{
       e.preventDefault();const nombre=campoNombre.value.trim();
@@ -84,9 +68,6 @@
       guardarTodo(habitos,registros);formularioRegistro.reset();$("error-registro").textContent="";mostrarDatos();
     });
     $("borrar").addEventListener("click",()=>{borrarCookie("habitos");borrarCookie("registros");habitos=[];registros=[];mostrarDatos();});
-    $("ver-seguimiento").addEventListener("click",e=>{e.preventDefault();generarSeguimiento();modal.classList.remove("oculto");});
-    $("cerrar-modal").addEventListener("click",()=>modal.classList.add("oculto"));
-    modal.addEventListener("click",function(e){if(e.target===this)this.classList.add("oculto");});
     mostrarDatos();
   </script>
 </body>

@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Seguimiento de hábitos</title>
+  <style>
+    body{margin:24px;background:#17151b;color:#f5f2f5;font:16px Arial,sans-serif}
+    main{max-width:900px;margin:auto;padding:20px;background:#24212a;border:1px solid #45404b;border-radius:10px}
+    h1{color:#eee9f1}p{color:#c9c2cd}table{width:100%;border-collapse:collapse;text-align:left}
+    th,td{padding:10px;border-bottom:1px solid #45404b}button{padding:8px 12px;border:0;border-radius:6px;background:#c83d52;color:white;cursor:pointer}
+    nav{margin-bottom:16px}nav a{color:#f5f2f5}
+    .cumplido{color:#75d69c}.fallado{color:#ff8999}
+    @media(max-width:600px){main{overflow-x:auto}table{min-width:600px}}
+  </style>
+</head>
+<body>
+  <nav><a href="index.html">Inicio</a></nav>
+  <main>
+    <h1>Seguimiento</h1>
+    <p id="resumen"></p>
+    <p id="aviso" role="status"></p>
+    <table>
+      <thead><tr><th>Hábito</th><th>Fecha</th><th>Observaciones</th><th>Estado</th><th>Acción</th></tr></thead>
+      <tbody id="filas"></tbody>
+    </table>
+  </main>
+  <script>
+    const filas=document.getElementById("filas");
+    function actualizarTabla(){
+      if(!window.opener||window.opener.closed||typeof window.opener.obtenerDatosSeguimiento!=="function"){
+        document.getElementById("aviso").textContent="Abre el seguimiento desde la página principal para editar registros.";
+        return;
+      }
+      const {habitos,registros}=window.opener.obtenerDatosSeguimiento();
+      filas.replaceChildren();let cumplidos=0;
+      registros.forEach(registro=>{
+        const fila=filas.insertRow(),habito=habitos.find(item=>item.id===registro.habitoId);
+        [habito?habito.nombre:"Hábito no disponible",registro.fecha,registro.observaciones||"—"].forEach(valor=>fila.insertCell().textContent=valor);
+        const estado=fila.insertCell();estado.textContent=registro.cumplido?"✓":"✗";
+        estado.className=registro.cumplido?"cumplido":"fallado";
+        const accion=fila.insertCell(),boton=document.createElement("button");
+        boton.type="button";boton.textContent="Cambiar";
+        boton.addEventListener("click",()=>{
+          if(!window.opener||window.opener.closed||typeof window.opener.toggleCumplido!=="function"||!window.opener.toggleCumplido(registro.id)){
+            document.getElementById("aviso").textContent="No se pudo actualizar el registro en la página principal.";
+            return;
+          }
+          document.getElementById("aviso").textContent="";
+          actualizarTabla();
+        });
+        accion.append(boton);if(registro.cumplido)cumplidos++;
+      });
+      document.getElementById("resumen").textContent=`Cumplidos: ${cumplidos} · Fallados: ${registros.length-cumplidos}`;
+      if(!registros.length)document.getElementById("aviso").textContent="Todavía no hay registros.";
+    }
+    actualizarTabla();
+  </script>
+</body>
+</html>
