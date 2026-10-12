@@ -5,3 +5,4 @@
 - `guardarTodo(habitos, registros)` guarda cada array en su cookie; `borrarCookie(nombre)` elimina la cookie indicada.
 - El desplegable de registros se genera recorriendo `habitos` y creando una opción por hábito; se actualiza al crear uno.
 - Cada registro guarda el `habitoId` seleccionado, que coincide con el `id` del hábito para relacionarlos, además de fecha, observaciones y si se cumplió.
+- El seguimiento aparece dentro de la página al quitar `oculto` de la capa modal; se cierra al añadir esa clase con ✕ o al pulsar el fondo. A diferencia de `window.open`, no crea otra ventana ni cambia de pestaña.
